@@ -1,0 +1,36 @@
+spring:
+  profiles:
+    active: dev
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  datasource:
+    #mysql的配置加载驱动类信息
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    #    password: root
+    # Type 设置使用何种类型的数据库连接池
+    #    type: com.alibaba.druid.pool.DruidDataSource
+    # c3p0连接池  com.mchange.v2.c3p0.ComboPooledDataSource
+  redis:
+    host: localhost
+    port: 6379
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    auto-mapping-behavior: full
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  global-config:
+    # 逻辑删除配置
+    db-config:
+      # 删除前
+      logic-not-delete-value: 1
+      # 删除后
+      logic-delete-value: 0
+
+#  是否打开swagger文档 生产环境关闭
+enable:
+  swagger: true
+
+server:
+  port: 8080

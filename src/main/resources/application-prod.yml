@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    #mysql的连接信息
+    url: jdbc:mysql://49.233.41.177:3306/blog?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&useSSL=false&serverTimezone = GMT
+    #用户名
+    username: root
+    #密码
+    password: 123
+#  是否打开swagger文档 生产环境关闭
+enable:
+  swagger: false
+
