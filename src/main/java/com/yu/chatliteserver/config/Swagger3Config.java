@@ -31,7 +31,7 @@ public class Swagger3Config {
                 .apiInfo(apiInfo())
                 .select()
 //                定位到文档的方式
-                .apis(RequestHandlerSelectors.basePackage("com.wu.blog.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.yu.chatliteserver.controller"))
 //                uri请求路径 any是全路径
                 .paths(PathSelectors.any())
                 .build();
@@ -47,7 +47,7 @@ public class Swagger3Config {
         return new ApiInfoBuilder()
                 .title("我的博客文档")
                 .description("springboot + vue 吴东宇的博客系统")
-                .contact(new Contact("吴东宇", "http://49.233.41.177/", "9490475461@qq.com"))
+                .contact(new Contact("吴东宇", "http://192.168.1.3/", "9490475461@qq.com"))
                 .version("1.0")
                 .build();
     }

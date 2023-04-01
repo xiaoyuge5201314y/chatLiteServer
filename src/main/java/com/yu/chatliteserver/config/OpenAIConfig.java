@@ -27,15 +27,15 @@ public class OpenAIConfig {
     public OpenAIConfig() {
         Map<String,String> headers = new HashMap<String,String>();
         headers.put("Content-Type","application/json;charset=UTF-8");
-        this.setHeaders(headers);
+//        this.setHeaders(headers);
 
-        this.setModel("text-davinci-003");
-        this.setPrompt("你真能");
-        this.setTemperature(1);
-        this.setMax_tokens(2048);
-        this.setTop_p(1);
-        this.setFrequency_penalty(1);
-        this.setPresence_penalty(1);
+//        this.setModel("text-davinci-003");
+//        this.setPrompt("你真能");
+//        this.setTemperature(1);
+//        this.setMax_tokens(2048);
+//        this.setTop_p(1);
+//        this.setFrequency_penalty(1);
+//        this.setPresence_penalty(1);
     }
 
     public String getResult (String prompt) {
@@ -55,7 +55,7 @@ public class OpenAIConfig {
         json.set("presence_penalty",this.presence_penalty);
         HttpResponse response = HttpRequest.post("https://api.openai.com/v1/14")
                 .headerMap(this.headers, false)
-                .bearerAuth("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")
+                .bearerAuth("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")
                 .body(String.valueOf(json))
                 .timeout(5 * 60 * 1000)
                 .setHttpProxy(proxyHost,proxyPort)

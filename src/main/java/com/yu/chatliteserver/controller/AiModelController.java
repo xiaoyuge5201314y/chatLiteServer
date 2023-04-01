@@ -27,4 +27,6 @@ public class AiModelController {
     public R getAiModelList() {
         return R.ok(iAiModelService.list());
     }
+
+
 }
