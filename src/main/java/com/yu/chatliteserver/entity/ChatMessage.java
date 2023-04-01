@@ -38,36 +38,16 @@ public class ChatMessage extends Model<ChatMessage> {
     @TableField("update_time")
     private LocalDateTime updateTime;
 
-    @TableField("prompt")
-    private JsonNode prompt;  // prompt字段使用JsonNode类型存储JSON数据
-
     @TableField("user_id")
     private String userId;
 
     @TableField("ai_model_id")
     private String aiModelId;
 
+
+
 //    @Version
     private Integer version;
 
 
-    @Override
-    public Serializable pkVal() {
-        return this.id;
-    }
-    public String getPrompt() {
-        try {
-            return new ObjectMapper().writeValueAsString(prompt);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON序列化异常", e);
-        }
-    }
-
-    public void setPrompt(String prompt) {
-        try {
-            this.prompt = new ObjectMapper().readValue(prompt, JsonNode.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON反序列化异常", e);
-        }
-    }
 }

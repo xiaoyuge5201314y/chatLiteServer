@@ -7,6 +7,6 @@ import lombok.Data;
 @Builder
 public class ChatMessageRequest {
     private String prompt;
-    private String userId;
+    private String messageId;
     private String aiModelId;
 }

@@ -3,7 +3,6 @@ package com.yu.chatliteserver.service;
 import com.yu.chatliteserver.entity.ChatMessage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yu.chatliteserver.request.ChatMessageRequest;
-import com.yu.chatliteserver.vo.R;
 
 import java.util.List;
 
@@ -21,4 +20,6 @@ public interface IChatMessageService extends IService<ChatMessage> {
 
     boolean updateChatMessageById(ChatMessageRequest chatMessageRequest, String id);
 
+    // 根据userId获取room列表
+    List<ChatMessage> listByUserId(String userId);
 }

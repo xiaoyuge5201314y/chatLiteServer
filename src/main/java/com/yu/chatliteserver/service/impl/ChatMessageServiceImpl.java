@@ -1,5 +1,6 @@
 package com.yu.chatliteserver.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yu.chatliteserver.entity.ChatMessage;
 import com.yu.chatliteserver.mapper.ChatMessageMapper;
 import com.yu.chatliteserver.request.ChatMessageRequest;
@@ -42,5 +43,12 @@ public class ChatMessageServiceImpl extends ServiceImpl<ChatMessageMapper, ChatM
         chatMessage.setUpdateTime(LocalDateTime.now());
         int rows = chatMessageMapper.updateById(chatMessage);
         return rows > 0;
+    }
+
+    @Override
+    public List<ChatMessage> listByUserId(String userId) {
+        LambdaQueryWrapper<ChatMessage> queryWrapper = new LambdaQueryWrapper();
+        queryWrapper.eq(ChatMessage::getUserId, userId);
+        return this.list();
     }
 }

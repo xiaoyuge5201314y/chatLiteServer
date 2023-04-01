@@ -21,6 +21,8 @@ public class OpenAIConfig {
     private int top_p;
     private double frequency_penalty;
     private double presence_penalty;
+    private String proxyHost = "127.0.0.1";
+    private int proxyPort = 4780;
 
     public OpenAIConfig() {
         Map<String,String> headers = new HashMap<String,String>();
@@ -34,7 +36,6 @@ public class OpenAIConfig {
         this.setTop_p(1);
         this.setFrequency_penalty(1);
         this.setPresence_penalty(1);
-
     }
 
     public String getResult (String prompt) {
@@ -52,11 +53,12 @@ public class OpenAIConfig {
         json.set("top_p",this.top_p);
         json.set("frequency_penalty",this.frequency_penalty);
         json.set("presence_penalty",this.presence_penalty);
-        HttpResponse response = HttpRequest.post("https://api.openai.com/v1/completions")
+        HttpResponse response = HttpRequest.post("https://api.openai.com/v1/14")
                 .headerMap(this.headers, false)
-                .bearerAuth("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")
+                .bearerAuth("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")
                 .body(String.valueOf(json))
                 .timeout(5 * 60 * 1000)
+                .setHttpProxy(proxyHost,proxyPort)
                 .execute();
         System.out.println(response);
         return response.body();

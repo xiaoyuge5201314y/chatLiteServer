@@ -35,7 +35,7 @@ public class MybatisPlusGenerator {
                 })
                 .strategyConfig(builder -> {
                     builder.addInclude(
-                                    "tb_chat_message"
+                                    "tb_chat_prompt"
                             )
                             .addTablePrefix("db_", "tb_", "tr_")// 设置过滤表前缀
                             .entityBuilder().disableSerialVersionUID()// 禁用生成 serialVersionUID,默认值:true
