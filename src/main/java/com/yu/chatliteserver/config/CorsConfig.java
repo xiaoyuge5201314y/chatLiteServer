@@ -21,8 +21,8 @@ public class CorsConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
 
         registry.addMapping("/**")  //设置允许跨域访问的路径
-                .allowedOriginPatterns("*")  //设置允许跨域访问的源
-//                .allowedOrigins("*")
+//                .allowedOriginPatterns("*")  //设置允许跨域访问的源
+                .allowedOrigins("*")
                 .allowedMethods("*")  //允许跨域请求的方法
                 .maxAge(1800)  //预检间隔时间
                 .allowedHeaders("*")  //允许头部设置

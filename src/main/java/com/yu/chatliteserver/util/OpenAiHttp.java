@@ -1,35 +1,31 @@
+/*
+ * @Description: 
+ * @Version: 1.0
+ * @Author: wudongyu
+ * @Date: 2023-04-09 15:01:51
+ * @LastEditors: wudongyu
+ * @LastEditTime: 2023-04-24 13:07:21
+ */
 package com.yu.chatliteserver.util;
 
-import cn.hutool.http.HttpRequest;
-import cn.hutool.http.HttpResponse;
-import cn.hutool.json.JSONObject;
+import com.yu.chatliteserver.constant.Constant;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 
-import java.util.Map;
+public class OpenAiHttp {
 
-public  class OpenAiHttp {
-    //添加我们需要输入的内容
-    private static String proxyHost = "127.0.0.1";
-    private static int proxyPort = 4780;
-
-    private static String openAiKey = "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";
-    public static String getReq(String path, Map<String, String> headers, JSONObject json) {
-        HttpResponse response = HttpRequest.get("https://api.openai.com/" + path)
-                .headerMap(headers, false)
-                .bearerAuth(openAiKey)
-                .timeout(5 * 60 * 1000)
-                .setHttpProxy(proxyHost,proxyPort)
-                .execute();
-        System.out.println(response.body());
-        return response.body();
-    }
-    public static HttpResponse postReq(String path, Map<String, String> headers, JSONObject json) {
-        HttpResponse response = HttpRequest.post("https://api.openai.com/" + path)
-                .headerMap(headers, false)
-                .bearerAuth(openAiKey)
-                .body(String.valueOf(json))
-                .timeout(5 * 60 * 1000)
-                .setHttpProxy(proxyHost,proxyPort)
-                .execute();
+    public static <T> HttpResponse request(T body, String path) {
+        Unirest.config().reset();
+        Unirest.config().connectTimeout(1000000000);
+        // Unirest.config().proxy(Constant.PROXY_HOST, Constant.PROXY_PORT);
+        System.out.println(body);
+        HttpResponse response = Unirest.post("https://"+Constant.OPENAI_HOST + "/" + path)
+                .header("Authorization", "Bearer "+Constant.OPENAI_API_KEY)
+                .header("Accept", "application/json")
+                // .header("User-Agent", "Apifox/1.0.0 (https://www.apifox.cn)")
+                .header("Content-Type", "application/json")
+                .body(body)
+                .asString();
         System.out.println(response);
         return response;
     }

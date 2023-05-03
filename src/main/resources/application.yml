@@ -12,7 +12,7 @@ spring:
     #    type: com.alibaba.druid.pool.DruidDataSource
     # c3p0连接池  com.mchange.v2.c3p0.ComboPooledDataSource
   redis:
-    host: localhost
+    host: 127.0.0.1
     port: 6379
 mybatis-plus:
   configuration:
@@ -33,4 +33,4 @@ enable:
   swagger: true
 
 server:
-  port: 9528
+  port: 9529

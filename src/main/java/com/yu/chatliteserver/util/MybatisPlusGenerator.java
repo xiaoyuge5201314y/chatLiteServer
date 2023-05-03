@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.generator.FastAutoGenerator;
 import com.baomidou.mybatisplus.generator.config.OutputFile;
 import com.baomidou.mybatisplus.generator.engine.FreemarkerTemplateEngine;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 
 /**
@@ -12,15 +14,16 @@ import java.util.Collections;
  */
 public class MybatisPlusGenerator {
     public static void main(String[] args) {
+
 //        FastAutoGenerator.create("jdbc:mysql://49.233.41.177:3306/blog?useUnicode=true&serverTimezone=GMT&characterEncoding=utf-8", "blog", "qqa222888")
-        FastAutoGenerator.create("jdbc:mysql://127.0.0.1:3306/chatLite?useUnicode=true&serverTimezone=GMT&characterEncoding=utf-8", "root", "root")
+        FastAutoGenerator.create("jdbc:mysql://127.0.0.1:3306/chatLite?useUnicode=true&serverTimezone=GMT&characterEncoding=utf-8", "root", "qqa222888")
 
                 .globalConfig(builder -> {
                     builder.author("吴东宇") // 设置作者
                             .enableSwagger() // 开启 swagger 模式
                             .disableOpenDir()// 禁止打开输出目录，默认值:true
                             .commentDate("yyyy-MM-dd HH:mm:ss")// 注释日期，默认值: yyyy-MM-dd
-                            .outputDir("D:\\product\\chatLite\\chatLiteServer\\chatLiteServer\\src\\main\\java"); // 指定输出目录
+                            .outputDir("./src/main/java"); // 指定输出目录
                 })
                 .packageConfig(builder -> {
                     builder.parent("com.yu.chatliteserver") // 设置父包名，默认值:com.baomidou
@@ -30,12 +33,13 @@ public class MybatisPlusGenerator {
                             .serviceImpl("service.impl")// Service Impl 包名，默认值:service.impl
                             .mapper("mapper")// Mapper 包名，默认值:mapper
                             .xml("mapper.xml")// Mapper XML 包名，默认值:mapper.xml
-                            .pathInfo(Collections.singletonMap(OutputFile.xml, "D:\\product\\chatLite\\chatLiteServer\\chatLiteServer\\src\\main\\resources/mapper")) // 路径配置信息
+                            .pathInfo(Collections.singletonMap(OutputFile.xml, "./src/main/resources/mapper")) // 路径配置信息
                             .controller("controller");// Controller 包名，默认值:controller
                 })
                 .strategyConfig(builder -> {
                     builder.addInclude(
-                                    "tb_chat_prompt"
+                                    "tb_chat_conversation",
+                                    "tb_chat_conversation_detail"
                             )
                             .addTablePrefix("db_", "tb_", "tr_")// 设置过滤表前缀
                             .entityBuilder().disableSerialVersionUID()// 禁用生成 serialVersionUID,默认值:true

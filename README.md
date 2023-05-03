@@ -1,0 +1,13 @@
+# 目录
+- Application
+  - config 配置
+  - controller 控制层
+  - dto 转化类
+  - entity 实体类 对应数据库
+  - interceptor 拦截器
+  - request 前端传参的实体类
+  - serverRequest 由服务端发送的请求封装 目前仅用于chatgpt
+  - service 服务层
+  - sql sql命令
+  - util 工具库
+  - vo 返回给前端的实体类

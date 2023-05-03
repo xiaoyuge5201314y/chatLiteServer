@@ -11,4 +11,10 @@ public interface IUserService extends IService<User> {
     boolean updateUser(User user, Integer version);
 
     boolean deleteUser(String id);
+
+    boolean authenticate(String username, String password); // 校验账号
+
+
+    String generateToken(String username);
+    boolean registerUser(User user);
 }

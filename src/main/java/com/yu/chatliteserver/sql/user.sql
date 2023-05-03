@@ -7,7 +7,7 @@ create table tb_user
     email    varchar(255) not null,
     create_time timestamp    not null,
     update_time timestamp    not null,
-    vip int not null
+    vip int not null,
     version int(255) not null
 );
 
