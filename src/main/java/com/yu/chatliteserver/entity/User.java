@@ -9,6 +9,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * <p>
@@ -23,7 +24,7 @@ import lombok.experimental.Accessors;
 @Accessors(chain = true)
 @TableName("tb_user")
 @ApiModel(value = "User对象", description = "")
-public class User extends Model<User> {
+public class User extends Model<User>  {
 
     @TableId(value = "id", type = IdType.ASSIGN_UUID)
     private String id;
@@ -46,7 +47,11 @@ public class User extends Model<User> {
     @TableField("vip")
     private Integer vip;
 
-    @Version // 添加 @Version 注解
+    @TableField("available_times")
+    private Integer availableTimes;
+
+//    @Version // 添加 @Version 注解
+    @TableField("version")
     private Integer version; // 版本号字段
 
 

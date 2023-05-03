@@ -9,7 +9,7 @@
 package com.yu.chatliteserver.constant;
 
 public class Constant {
-    public static final String OPENAI_API_KEY = "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";
+    public static final String OPENAI_API_KEY = "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";
     public static final Integer PROXY_PORT = 4780;
     public static final String PROXY_HOST = "127.0.0.1";
     public static final String OPENAI_HOST = "api.openai-proxy.com";

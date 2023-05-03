@@ -14,6 +14,7 @@ import com.yu.chatliteserver.mapper.ChatConversationMapper;
 import com.yu.chatliteserver.request.chat.ConversationRequest;
 import com.yu.chatliteserver.request.chat.SendChatMessageRequest;
 import com.yu.chatliteserver.serverRequest.ChatHttp;
+import com.yu.chatliteserver.service.IUserService;
 import com.yu.chatliteserver.util.MyJsonUtil;
 import com.yu.chatliteserver.vo.R;
 import com.yu.chatliteserver.vo.chat.ChatResponseVO;
@@ -54,6 +55,9 @@ public class ChatConversationController {
 
     @Autowired
     private AiModelMapper aiModelMapper;
+
+    @Autowired
+    private IUserService userService;
 
     // 创建会话
     @ApiOperation(value = "创建会话")
@@ -110,6 +114,12 @@ public class ChatConversationController {
     @PostMapping("/message")
     @Transactional
     public R sendChatMessage(@RequestBody SendChatMessageRequest chatSendMessageRequest) {
+        String id = request.getHeader("userId");
+        int times = userService.getTimesById(id);
+        if (times == 0) {
+            return R.error("剩余聊天次数不足");
+        }
+        userService.setAvailableTimes(id,times-1);
         String conversationId = chatSendMessageRequest.getConversationId();
         if (StringUtil.isNullOrEmpty(conversationId)) {
             String userId = request.getHeader("userId");

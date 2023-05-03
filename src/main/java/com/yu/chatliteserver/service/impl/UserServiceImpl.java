@@ -7,11 +7,17 @@ import com.yu.chatliteserver.mapper.UserMapper;
 import com.yu.chatliteserver.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import com.yu.chatliteserver.util.TokenUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * <p>
@@ -32,13 +38,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     private PasswordEncoder passwordEncoder;
 
 
-
     /**
      * 新增用户 （这个是管理后台手动新增的 和注册一样效果）
      *
      * @param user
      * @return
      */
+    @Transactional
     @Override
     public boolean saveUser(User user) {
         // 检查用户名是否重复
@@ -46,18 +52,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         usernameWrapper.eq("username", user.getUsername());
         User usernameUser = this.getOne(usernameWrapper);
         if (usernameUser != null) {
-            throw new RuntimeException("用户名已存在");
+            return false;
+//            throw new RuntimeException("用户名已存在");
         }
         // 检查邮箱是否重复
         QueryWrapper<User> emailWrapper = new QueryWrapper<>();
         emailWrapper.eq("email", user.getEmail());
         User emailUser = this.getOne(emailWrapper);
         if (emailUser != null) {
-            throw new RuntimeException("邮箱已存在");
+            return false;
+//            throw new RuntimeException("邮箱已存在");
         }
         // 将加密后的密码存储到数据库
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
+        user.setVip(1);
+        user.setVersion(0);
         user.setCreateTime(LocalDateTime.now());
         user.setUpdateTime(LocalDateTime.now());
         return this.save(user);
@@ -82,6 +92,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
         // 不能修改用户名
         User oldUser = this.getById(user.getId());
+        // 不能修改用户名
+        if (!oldUser.getVersion().equals(version)) {
+            throw new RuntimeException("数据已过期，请刷新数据后再尝试更新。");
+        }
+
         user.setUsername(oldUser.getUsername());
         user.setUpdateTime(LocalDateTime.now());
         return this.updateById(user);
@@ -100,6 +115,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     /**
      * 校验账号
+     *
      * @param username
      * @param password
      * @return
@@ -118,31 +134,80 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
 
     /**
      * 根据用户名生成token
+     *
      * @param username
      * @return
      */
     @Override
     public String generateToken(String username) {
         // 使用 JWT 或其他库生成 token，此处省略具体实现
-        return "generated_token";
+        return TokenUtil.generateToken(username);
     }
 
     /**
      * 注册
+     *
      * @param user
      * @return
      */
     @Override
     public boolean registerUser(User user) {
-        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUsername, user.getUsername());
-        User existingUser = userMapper.selectOne(queryWrapper);
+        return this.saveUser(user);
+    }
 
-        if (existingUser == null) {
-            user.setPassword(passwordEncoder.encode(user.getPassword()));
-            userMapper.insert(user);
-            return true;
+    @Override
+    public User loadUserByUsername(String username) {
+        QueryWrapper<User> usernameWrapper = new QueryWrapper<>();
+        usernameWrapper.eq("username", username);
+        User usernameUser = this.getOne(usernameWrapper);
+        if (usernameUser != null) {
+            return usernameUser;
         }
-        return false;
+        return null;
+    }
+
+    @Override
+    public int getTimesById(String id) {
+        return this.getById(id).getAvailableTimes();
+    }
+
+    @Override
+    public int getTimesByUsername(String username) {
+        QueryWrapper<User> usernameWrapper = new QueryWrapper<>();
+        usernameWrapper.eq("username", username);
+        User usernameUser = this.getOne(usernameWrapper);
+        return usernameUser.getAvailableTimes();
+    }
+
+    @Override
+    /**
+     * 设置剩余聊天次数
+     */
+    public void setAvailableTimes(String userId, int i) {
+        User user = this.getById(userId);
+        user.setAvailableTimes(i);
+        this.updateUser(user,user.getVersion());
+
+    }
+
+    @Override
+    public void resetUseTimes() {
+        // 查询所有用户
+        List<User> users = this.list();
+
+        // 更新每个用户的 useTimes
+        for (User user : users) {
+            int newUseTimes = user.getAvailableTimes() + 10;
+            if (newUseTimes > 10) {
+                newUseTimes = 10;
+            }
+            user.setAvailableTimes(newUseTimes);
+            this.updateById(user);
+        }
+    }
+
+    @Scheduled(cron = "0 0 0-23 * * ?")
+    public void scheduledResetUseTimes() {
+        resetUseTimes();
     }
 }

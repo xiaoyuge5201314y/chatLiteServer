@@ -1,6 +1,6 @@
 package com.yu.chatliteserver.config;
 
-import com.yu.chatliteserver.interceptor.UserIdInterceptor;
+import com.yu.chatliteserver.filter.UserIdInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;

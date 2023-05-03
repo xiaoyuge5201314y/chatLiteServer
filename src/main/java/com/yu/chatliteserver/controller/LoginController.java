@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 public class LoginController {
@@ -27,8 +30,15 @@ public class LoginController {
         if (isAuthenticated) {
             // 根据实际需求生成并返回 token
             String token = userService.generateToken(loginRequest.getUsername());
+            User user = userService.loadUserByUsername(loginRequest.getUsername());
 
-            return R.ok(token);
+            Map<String, Object> map = new HashMap();
+            map.put("accessToken", token);
+            map.put("userInfo", user);
+            map.put("expires", 1000000000);
+            map.put("refreshToken", "");
+            map.put("roles", null);
+            return R.ok(map);
         } else {
             return R.error("登录失败，用户名或密码错误");
         }

@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 
 /**
  * <p>
@@ -27,7 +28,6 @@ import lombok.experimental.Accessors;
 @TableName("tb_ai_model")
 @ApiModel(value = "AiModel对象", description = "")
 public class AiModel extends Model<AiModel> {
-
     @TableId(value = "id", type = IdType.ASSIGN_UUID)
     private String id;
 

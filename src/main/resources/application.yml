@@ -1,4 +1,6 @@
 spring:
+  main:
+    allow-bean-definition-overriding: true
   profiles:
     active: dev
   mvc:
@@ -14,6 +16,12 @@ spring:
   redis:
     host: 127.0.0.1
     port: 6379
+  security:
+    csrf:
+      enabled: false
+      ignored: /**
+jwt:
+  secret: mysecret
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
@@ -27,10 +35,12 @@ mybatis-plus:
       logic-not-delete-value: 1
       # 删除后
       logic-delete-value: 0
+      # id生成策略
+      id-type: assign_uuid
 
 #  是否打开swagger文档 生产环境关闭
 enable:
   swagger: true
 
 server:
-  port: 9529
+  port: 8080

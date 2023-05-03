@@ -1,4 +1,4 @@
-package com.yu.chatliteserver.interceptor;
+package com.yu.chatliteserver.filter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
