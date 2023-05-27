@@ -4,19 +4,21 @@ import com.yu.chatliteserver.entity.User;
 import com.yu.chatliteserver.request.user.LoginRequest;
 import com.yu.chatliteserver.request.user.RegisterRequest;
 import com.yu.chatliteserver.service.IUserService;
+import com.yu.chatliteserver.util.TokenUtil;
 import com.yu.chatliteserver.vo.R;
+import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class LoginController {
+    @Autowired
+    private HttpServletRequest request;
 
     @Autowired
     private IUserService userService;
@@ -30,13 +32,15 @@ public class LoginController {
         if (isAuthenticated) {
             // 根据实际需求生成并返回 token
             String token = userService.generateToken(loginRequest.getUsername());
+            String refreshToken = userService.generateRefreshToken(loginRequest.getUsername());
             User user = userService.loadUserByUsername(loginRequest.getUsername());
 
             Map<String, Object> map = new HashMap();
             map.put("accessToken", token);
+            map.put("token", token);
             map.put("userInfo", user);
-            map.put("expires", 1000000000);
-            map.put("refreshToken", "");
+            map.put("expires", 1000 * 60 * 60 * 10);
+            map.put("refreshToken", refreshToken);
             map.put("roles", null);
             return R.ok(map);
         } else {
@@ -59,6 +63,16 @@ public class LoginController {
         } else {
             return R.error("注册失败，用户名已被占用或其他原因");
         }
+    }
+
+    // 获取用户信息
+    @GetMapping("/getUserInfo")
+    public R getUserInfo () {
+        String accessToken = request.getHeader("authorization");
+        Claims claims =  TokenUtil.getClaimsFromToken(accessToken);
+        Object username = claims.get("userId");
+        User user = userService.loadUserByUsername((String)username);
+        return R.ok(user);
     }
 }
 

@@ -145,6 +145,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     }
 
     /**
+     * 根据用户名生成refreshtToken
+     *
+     * @param username
+     * @return
+     */
+    @Override
+    public String generateRefreshToken(String username) {
+        // 使用 JWT 或其他库生成 token，此处省略具体实现
+        return TokenUtil.generateRefreshToken(username);
+    }
+
+    /**
      * 注册
      *
      * @param user

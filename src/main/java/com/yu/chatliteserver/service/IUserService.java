@@ -25,6 +25,8 @@ public interface IUserService extends IService<User> {
 
 
     String generateToken(String username);
+    String generateRefreshToken(String username);
+
     boolean registerUser(User user);
 
     User loadUserByUsername(String username);

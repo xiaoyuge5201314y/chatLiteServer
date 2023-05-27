@@ -20,10 +20,25 @@ public class TokenUtil {
                 //设置分类；设置过期时间 一个当前时间，一个加上设置的过期时间常量
                 .setSubject("lin-user")
                 .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 10))
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
+                .compact();
+    }
+
+    // 生成 refresh token
+    public static String generateRefreshToken(String userName) {
+        Map<String, Object> claims = new HashMap();
+        claims.put("userId", userName);
+        return Jwts.builder()
+                .setClaims(claims)
+                //设置分类；设置过期时间 一个当前时间，一个加上设置的过期时间常量
+                .setSubject("lin-user")
+                .setIssuedAt(new Date(System.currentTimeMillis()))
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
+
 
     public static Claims getClaimsFromToken(String token) {
         return Jwts.parser()

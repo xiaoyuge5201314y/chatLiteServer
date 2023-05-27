@@ -126,6 +126,12 @@
             <classifier>standalone</classifier>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.plexpt</groupId>
+            <artifactId>chatgpt</artifactId>
+            <version>4.0.8</version>
+        </dependency>
+
     </dependencies>
 
 
