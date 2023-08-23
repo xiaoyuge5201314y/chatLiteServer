@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.yu.chatliteserver.mapper.SceneMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.yu.chatliteserver.entity.Scene">
+        <id column="id" property="id" />
+        <result column="scene_name" property="sceneName" />
+        <result column="scene_prompt" property="scenePrompt" />
+        <result column="scene_description" property="sceneDescription" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, scene_name, scene_prompt, scene_description
+    </sql>
+
+</mapper>
