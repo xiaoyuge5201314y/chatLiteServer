@@ -4,15 +4,21 @@
  * @Author: wudongyu
  * @Date: 2023-04-09 15:01:51
  * @LastEditors: wudongyu
- * @LastEditTime: 2023-05-16 05:21:26
+ * @LastEditTime: 2023-05-27 23:55:03
  */
 package com.yu.chatliteserver.controller;
 
 import com.yu.chatliteserver.entity.User;
+import com.yu.chatliteserver.entity.UserChat;
 import com.yu.chatliteserver.request.UserRequest;
+import com.yu.chatliteserver.service.IUserChatService;
 import com.yu.chatliteserver.service.IUserService;
 import com.yu.chatliteserver.vo.R;
 import com.yu.chatliteserver.vo.UserVO;
+
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.stp.StpUtil;
 import io.swagger.annotations.ApiModelProperty;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +30,7 @@ import java.util.stream.Collectors;
 
 /**
  * <p>
- *  前端控制器
+ * 前端控制器
  * </p>
  *
  * @author 吴东宇
@@ -33,11 +39,14 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
+@SaCheckLogin
 public class UserController {
-
 
     @Autowired
     private IUserService iUserService;
+
+    @Autowired
+    private IUserChatService iUserChatService;
 
     // 用户列表
     @GetMapping("/list")
@@ -77,11 +86,12 @@ public class UserController {
 
     // 修改用户
     @PutMapping("/{id}/{version}")
-    public UserVO updateUser(@PathVariable (value="id") String id,@PathVariable(value = "version") Integer version, @RequestBody UserRequest userRequest) {
+    public UserVO updateUser(@PathVariable(value = "id") String id, @PathVariable(value = "version") Integer version,
+            @RequestBody UserRequest userRequest) {
         User user = new User();
         BeanUtils.copyProperties(userRequest, user);
         user.setId(id);
-        boolean success = iUserService.updateUser(user,version);
+        boolean success = iUserService.updateUser(user, version);
         if (success) {
             UserVO userVO = new UserVO();
             BeanUtils.copyProperties(user, userVO);
@@ -105,5 +115,19 @@ public class UserController {
         return R.ok();
     }
 
+    // 获取用户信息
+    @GetMapping("userInfo")
+    public R getUserInfo() {
+        // 根据实际需求实现
+        User user = iUserService.getById((String) StpUtil.getLoginId());
+        return R.ok(user);
+    }
+
+    // 获取账户信息
+    @GetMapping("chatInfo")
+    public R getUserChatInfo() {
+        UserChat userChat = iUserChatService.getByUserId();
+        return R.ok(userChat);
+    }
 
 }

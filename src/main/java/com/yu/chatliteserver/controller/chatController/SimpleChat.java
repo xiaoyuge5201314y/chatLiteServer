@@ -30,21 +30,21 @@ import java.util.List;
 @Api(tags = "简单聊天模块")
 public class SimpleChat {
 
-    @ApiOperation(value = "询问问题")
-    @PostMapping("asking")
-    public R asking (@RequestBody SimpleChatRequest simpleChatRequest) {
-        // 请求
-        ChatRequestDTO chatRequestDTO = new ChatRequestDTO();
-        List<Message> messages= new ArrayList<>();
-        Message message  = new Message();
-        message.setRole("user");
-        message.setContent(simpleChatRequest.getContent());
-        messages.add(message);
-        chatRequestDTO.setMessages(messages);
-        chatRequestDTO.setModel("gpt-3.5-turbo");
-        // 响应
-        Message messageResponse = ChatHttp.chat(chatRequestDTO);
-        return R.ok(messageResponse);
-    }
+    // @ApiOperation(value = "询问问题")
+    // @PostMapping("asking")
+    // public R asking (@RequestBody SimpleChatRequest simpleChatRequest) {
+    //     // 请求
+    //     ChatRequestDTO chatRequestDTO = new ChatRequestDTO();
+    //     List<Message> messages= new ArrayList<>();
+    //     Message message  = new Message();
+    //     message.setRole("user");
+    //     message.setContent(simpleChatRequest.getContent());
+    //     messages.add(message);
+    //     chatRequestDTO.setMessages(messages);
+    //     chatRequestDTO.setModel("gpt-3.5-turbo");
+    //     // 响应
+    //     Message messageResponse = ChatHttp.chat(chatRequestDTO);
+    //     return R.ok(messageResponse);
+    // }
 
 }

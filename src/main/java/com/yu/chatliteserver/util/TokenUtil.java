@@ -1,9 +1,16 @@
+/*
+ * @Description: 
+ * @Version: 1.0
+ * @Author: wudongyu
+ * @Date: 2023-05-03 10:41:36
+ * @LastEditors: wudongyu
+ * @LastEditTime: 2023-05-27 19:06:21
+ */
 package com.yu.chatliteserver.util;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Date;
 import java.util.HashMap;
@@ -48,10 +55,6 @@ public class TokenUtil {
     }
 
 
-    public static boolean validateToken(String token, UserDetails userDetails) {
-        final String username = getClaimsFromToken(token).getSubject();
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
-    }
 
     private static boolean isTokenExpired(String token) {
         final Date expiration = getClaimsFromToken(token).getExpiration();

@@ -1,10 +1,20 @@
+/*
+ * @Description: 
+ * @Version: 1.0
+ * @Author: wudongyu
+ * @Date: 2023-04-09 15:03:12
+ * @LastEditors: wudongyu
+ * @LastEditTime: 2023-06-22 01:03:54
+ */
 package com.yu.chatliteserver.controller.chatController;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yu.chatliteserver.dto.openAiHttp.chat.ChatRequestDTO;
-import com.yu.chatliteserver.dto.openAiHttp.chat.Message;
+import com.plexpt.chatgpt.entity.chat.ChatCompletionResponse;
+import com.plexpt.chatgpt.entity.chat.Message;
 import com.yu.chatliteserver.entity.AiModel;
 import com.yu.chatliteserver.entity.ChatConversation;
 import com.yu.chatliteserver.entity.ChatConversationDetail;
@@ -14,10 +24,16 @@ import com.yu.chatliteserver.mapper.ChatConversationMapper;
 import com.yu.chatliteserver.request.chat.ConversationRequest;
 import com.yu.chatliteserver.request.chat.SendChatMessageRequest;
 import com.yu.chatliteserver.serverRequest.ChatHttp;
+import com.yu.chatliteserver.service.IChatConversationDetailService;
+import com.yu.chatliteserver.service.IChatConversationService;
+import com.yu.chatliteserver.service.IGPTService;
 import com.yu.chatliteserver.service.IUserService;
 import com.yu.chatliteserver.util.MyJsonUtil;
 import com.yu.chatliteserver.vo.R;
 import com.yu.chatliteserver.vo.chat.ChatResponseVO;
+
+import cn.dev33.satoken.annotation.SaCheckLogin;
+import cn.dev33.satoken.stp.StpUtil;
 import io.netty.util.internal.StringUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -26,6 +42,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.swing.Icon;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +59,13 @@ import java.util.UUID;
  */
 @RestController
 @RequestMapping("api/conversations")
+@Transactional
 @Api(tags = "会话")
+@SaCheckLogin
 public class ChatConversationController {
+
+    @Autowired
+    private IGPTService igptService;
 
     @Autowired
     private ChatConversationMapper conversationMapper;
@@ -58,6 +81,12 @@ public class ChatConversationController {
 
     @Autowired
     private IUserService userService;
+
+    @Autowired
+    private IChatConversationService iChatConversationService;
+
+    @Autowired
+    private IChatConversationDetailService iChatConversationDetailService;
 
     // 创建会话
     @ApiOperation(value = "创建会话")
@@ -81,7 +110,8 @@ public class ChatConversationController {
 
     @ApiOperation(value = "添加会话详情")
     @PostMapping("/{conversation_id}/details")
-    public String addConversationDetail(@PathVariable("conversation_id") String conversationId, @RequestParam("messages") String messages) {
+    public String addConversationDetail(@PathVariable("conversation_id") String conversationId,
+            @RequestParam("messages") String messages) {
         ChatConversationDetail conversationDetail = new ChatConversationDetail();
         conversationDetail.setId(UUID.randomUUID().toString());
         conversationDetail.setConversationId(conversationId);
@@ -96,86 +126,74 @@ public class ChatConversationController {
 
     @ApiOperation(value = "获取会话分页列表")
     @GetMapping("/page")
-    public R getConversations(@RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "size", defaultValue = "10") int size) {
+    public R getConversations(@RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
         IPage<ChatConversation> pageData = new Page<>(page, size);
         QueryWrapper<ChatConversation> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByDesc("create_time");
 
         return R.ok(conversationMapper.selectPage(pageData, queryWrapper).getRecords());
     }
+
     @ApiOperation(value = "获取会话不分页列表")
     @GetMapping("/list")
     public R getConversationsNotPage() {
         QueryWrapper<ChatConversation> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("user_id", request.getHeader("userId"));
+
+        queryWrapper.eq("user_id", StpUtil.getLoginId());
         return R.ok(conversationMapper.selectList(queryWrapper));
     }
+
     @ApiOperation(value = "发送消息")
     @PostMapping("/message")
-    @Transactional
     public R sendChatMessage(@RequestBody SendChatMessageRequest chatSendMessageRequest) {
-        String id = request.getHeader("userId");
-        int times = userService.getTimesById(id);
-        if (times == 0) {
-            return R.error("剩余聊天次数不足");
-        }
-        userService.setAvailableTimes(id,times-1);
+        // 获取用户剩余使用次数
+        // int times = userService.getTimesById(id);
+        // if (times == 0) {
+        // return R.error("剩余聊天次数不足");
+        // }
+        // userService.setAvailableTimes(id, times - 1);
+
+        // 当前消息所属会话id
         String conversationId = chatSendMessageRequest.getConversationId();
-        if (StringUtil.isNullOrEmpty(conversationId)) {
-            String userId = request.getHeader("userId");
+        ChatConversation conversation = iChatConversationService.getById(conversationId);
 
-            ChatConversation conversation = new ChatConversation();
-            conversation.setId(UUID.randomUUID().toString());
-            conversation.setUserId(userId);
-            conversation.setAiModelId("2");
-            conversation.setCreateTime(LocalDateTime.now());
-            conversation.setUpdateTime(LocalDateTime.now());
-            conversation.setVersion(1);
-
-            conversationMapper.insert(conversation);
-            conversationId = conversation.getId();
+        if (conversation == null) {
+            conversation = iChatConversationService.addConversation();
         }
+
         // 查询会话详情表 如果没有就创建一个
-        QueryWrapper<ChatConversationDetail> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("conversation_id", conversationId);
-        ChatConversationDetail conversationDetail= conversationDetailMapper.selectOne(queryWrapper);
+        ChatConversationDetail conversationDetail = iChatConversationDetailService.getByConversationId(conversationId);
         if (conversationDetail == null) {
-            conversationDetail = new ChatConversationDetail();
-            conversationDetail.setId(UUID.randomUUID().toString());
-            conversationDetail.setConversationId(conversationId);
-            conversationDetail.setMessages("");
-            conversationDetail.setCreateTime(LocalDateTime.now());
-            conversationDetail.setUpdateTime(LocalDateTime.now());
-            conversationDetail.setVersion(0);
-            conversationDetailMapper.insert(conversationDetail);
+            conversationDetail = iChatConversationDetailService.addConversationDetail(conversationId);
         }
         String messagesStr = conversationDetail.getMessages();
         List<Message> messages = new ArrayList<Message>();
         // 将message json数据转换成数组
         // 历史消息存在时 获取历史消息
         if (!StringUtil.isNullOrEmpty(messagesStr)) {
-           List<Message> historyMessages =  (List)MyJsonUtil.toJSONObject(messagesStr);
-           messages.addAll(historyMessages);
+            List<Message> historyMessages = (List) MyJsonUtil.toJSONObject(messagesStr);
+            messages.addAll(historyMessages);
         }
         // 将请求的消息添加到数组中并发送chatgpt
         // 获取模型信息
-        ChatConversation conversation = conversationMapper.selectById(conversationId);
         AiModel aiModel = aiModelMapper.selectById(conversation.getAiModelId());
-        Message message = new Message();
-        message.setRole("user");
-        message.setContent(chatSendMessageRequest.getContent());
+        Message message = Message.of(chatSendMessageRequest.getContent());
         messages.add(message);
-        ChatRequestDTO chatRequestDTO = new ChatRequestDTO();
+        ChatRequestDTO chatRequestDTO = ChatRequestDTO
+                .builder()
+                .build();
         // 取出最近十条记录
         int firstRecordIndex = 0;
-        if (messages.size()>=10) {
-            firstRecordIndex = messages.size()-10;
+        if (messages.size() >= 10) {
+            firstRecordIndex = messages.size() - 10;
         }
-        chatRequestDTO.setMessages(messages.subList(firstRecordIndex,messages.size()));
+        chatRequestDTO.setMessages(messages.subList(firstRecordIndex, messages.size()));
         chatRequestDTO.setModel(aiModel.getName());
 
         // 有了详情之后 发送消息给chatgpt
-        Message responseMessage =  ChatHttp.chat(chatRequestDTO);
+        ChatCompletionResponse chatCompletionResponse = igptService.chat(chatRequestDTO);
+        Message responseMessage = chatCompletionResponse.getChoices().get(0).getMessage();
         // 将请求和响应消息添加到历史记录
         messages.add(responseMessage);
         // 将返回结果保存到数据库
@@ -194,39 +212,41 @@ public class ChatConversationController {
     @GetMapping("/message/list/{id}")
     public R getConversationsMessagesNotPage(@PathVariable(value = "id") String conversationId) {
         LambdaQueryWrapper<ChatConversationDetail> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(ChatConversationDetail::getConversationId,conversationId);
+        queryWrapper.eq(ChatConversationDetail::getConversationId, conversationId);
         ChatConversationDetail conversationDetail = conversationDetailMapper.selectOne(queryWrapper);
         String messages = conversationDetail.getMessages();
         return R.ok(MyJsonUtil.toJSONObject(messages));
     }
 
+    @ApiOperation(value = "获取会话详情列表")
+    @GetMapping("/{conversation_id}/details")
+    public List<ChatConversationDetail> getConversationDetails(@PathVariable("conversation_id") String conversationId,
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size) {
+        IPage<ChatConversationDetail> pageData = new Page<>(page, size);
+        QueryWrapper<ChatConversationDetail> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("conversation_id", conversationId);
+        queryWrapper.orderByAsc("create_time");
 
-//    @ApiOperation(value = "获取会话详情列表")
-//    @GetMapping("/{conversation_id}/details")
-//    public List<ChatConversationDetail> getConversationDetails(@PathVariable("conversation_id") String conversationId, @RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "size", defaultValue = "10") int size) {
-//        IPage<ChatConversationDetail> pageData = new Page<>(page, size);
-//        QueryWrapper<ChatConversationDetail> queryWrapper = new QueryWrapper<>();
-//        queryWrapper.eq("conversation_id", conversationId);
-//        queryWrapper.orderByAsc("create_time");
-//
-//        return conversationDetailMapper.selectPage(pageData, queryWrapper).getRecords();
-//    }
+        return conversationDetailMapper.selectPage(pageData, queryWrapper).getRecords();
+    }
 
-//    @ApiOperation(value = "更新会话")
-//    @PutMapping("/{conversation_id}")
-//    public String updateConversation(@PathVariable("conversation_id") String conversationId, @RequestParam("ai_model_id") String aiModelId) {
-//        ChatConversation conversation = conversationMapper.selectById(conversationId);
-//        if (conversation == null) {
-//            return "会话不存在";
-//        }
-//
-//        conversation.setAiModelId(aiModelId);
-//        conversation.setUpdateTime(LocalDateTime.now());
-//        conversation.setVersion(conversation.getVersion() + 1);
-//
-//        conversationMapper.updateById(conversation);
-//        return "更新会话成功";
-//    }
+    @ApiOperation(value = "更新会话")
+    @PutMapping("/{conversation_id}")
+    public String updateConversation(@PathVariable("conversation_id") String conversationId,
+            @RequestParam("ai_model_id") String aiModelId) {
+        ChatConversation conversation = conversationMapper.selectById(conversationId);
+        if (conversation == null) {
+            return "会话不存在";
+        }
+
+        conversation.setAiModelId(aiModelId);
+        conversation.setUpdateTime(LocalDateTime.now());
+        conversation.setVersion(conversation.getVersion() + 1);
+
+        conversationMapper.updateById(conversation);
+        return "更新会话成功";
+    }
 
     @ApiOperation(value = "删除会话")
     @DeleteMapping("/{conversation_id}")
@@ -240,4 +260,19 @@ public class ChatConversationController {
 
         return R.ok("删除会话及其相关会话详情成功");
     }
+
+    @ApiOperation(value = "根据场景id获取会话id")
+    @GetMapping("getIdBySence/{sence_id}")
+    public R getConversationIdBySenceId(@PathVariable("sence_id") String sence_id) {
+
+        // 删除会话相关的会话详情
+        QueryWrapper<ChatConversation> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("sence_id", sence_id);
+        ChatConversation chatConversation = iChatConversationService.getOne(queryWrapper);
+        if (chatConversation == null) {
+            return R.ok();
+        }
+        return R.ok(chatConversation.getId());
+    }
+
 }

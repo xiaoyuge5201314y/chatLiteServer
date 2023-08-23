@@ -6,6 +6,9 @@ import com.yu.chatliteserver.request.user.RegisterRequest;
 import com.yu.chatliteserver.service.IUserService;
 import com.yu.chatliteserver.util.TokenUtil;
 import com.yu.chatliteserver.vo.R;
+
+import cn.dev33.satoken.stp.SaTokenInfo;
+import cn.dev33.satoken.stp.StpUtil;
 import io.jsonwebtoken.Claims;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,23 +28,22 @@ public class LoginController {
 
     // 处理登录请求
     @PostMapping("/login")
-    public R login(@RequestBody LoginRequest loginRequest) {
+    public R doLogin(@RequestBody LoginRequest loginRequest) {
         // 判断是否校验通过
-        boolean isAuthenticated = userService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
+        User loginUser = userService.authenticate(loginRequest.getUsername(), loginRequest.getPassword());
 
-        if (isAuthenticated) {
-            // 根据实际需求生成并返回 token
-            String token = userService.generateToken(loginRequest.getUsername());
-            String refreshToken = userService.generateRefreshToken(loginRequest.getUsername());
-            User user = userService.loadUserByUsername(loginRequest.getUsername());
+        if (loginUser != null) {
+            String loginId = loginUser.getId();
+            // 标记当前会话登录的账号id
+            StpUtil.login(loginId);
+            // 获取token tokenName和tokenValue
+            SaTokenInfo tokenInfo = StpUtil.getTokenInfo();
 
-            Map<String, Object> map = new HashMap();
-            map.put("accessToken", token);
-            map.put("token", token);
-            map.put("userInfo", user);
-            map.put("expires", 1000 * 60 * 60 * 10);
-            map.put("refreshToken", refreshToken);
-            map.put("roles", null);
+            Map<String, Object> map = new HashMap<>();
+            map.put("tokenName", tokenInfo.tokenName);
+            map.put("token", tokenInfo.tokenValue);
+            // map.put("expires", 1000 * 60 * 60 * 10);
+            // map.put("roles", null);
             return R.ok(map);
         } else {
             return R.error("登录失败，用户名或密码错误");
@@ -67,17 +69,11 @@ public class LoginController {
 
     // 获取用户信息
     @GetMapping("/getUserInfo")
-    public R getUserInfo () {
+    public R getUserInfo() {
         String accessToken = request.getHeader("authorization");
-        Claims claims =  TokenUtil.getClaimsFromToken(accessToken);
+        Claims claims = TokenUtil.getClaimsFromToken(accessToken);
         Object username = claims.get("userId");
-        User user = userService.loadUserByUsername((String)username);
+        User user = userService.loadUserByUsername((String) username);
         return R.ok(user);
     }
 }
-
-
-
-
-
-

@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Version: 1.0
+ * @Author: wudongyu
+ * @Date: 2023-04-09 15:01:51
+ * @LastEditors: wudongyu
+ * @LastEditTime: 2023-05-27 23:48:31
+ */
 package com.yu.chatliteserver.util;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -38,8 +46,7 @@ public class MybatisPlusGenerator {
                 })
                 .strategyConfig(builder -> {
                     builder.addInclude(
-                                    "tb_chat_conversation",
-                                    "tb_chat_conversation_detail"
+                                    "tb_scene"
                             )
                             .addTablePrefix("db_", "tb_", "tr_")// 设置过滤表前缀
                             .entityBuilder().disableSerialVersionUID()// 禁用生成 serialVersionUID,默认值:true

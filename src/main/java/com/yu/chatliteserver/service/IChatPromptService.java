@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Version: 1.0
+ * @Author: wudongyu
+ * @Date: 2023-04-09 15:01:51
+ * @LastEditors: wudongyu
+ * @LastEditTime: 2023-06-21 18:56:49
+ */
 package com.yu.chatliteserver.service;
 
 import com.yu.chatliteserver.entity.ChatPrompt;
@@ -19,4 +27,6 @@ public interface IChatPromptService extends IService<ChatPrompt> {
     List<ChatPrompt> getList (String messageId);
 
     void add(String messageId, String role, String prompt);
+    
+    
 }

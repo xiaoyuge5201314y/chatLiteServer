@@ -39,12 +39,15 @@ public class ChatConversation extends Model<ChatConversation> {
     @TableField("user_id")
     private String userId;
 
-    @TableField("ai_model_id")
+    @TableField(value = "ai_model_id", exist = true)
+    @ApiModelProperty(value = "AI model ID")
     private String aiModelId;
 
     @TableField("version")
     private Integer version;
 
+    @TableField("sence_id")
+    private String senceId;
 
     @Override
     public Serializable pkVal() {

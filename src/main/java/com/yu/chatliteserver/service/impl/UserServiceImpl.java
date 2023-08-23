@@ -8,11 +8,11 @@ import com.yu.chatliteserver.service.IUserService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 import com.yu.chatliteserver.util.TokenUtil;
+
+import cn.dev33.satoken.stp.StpUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,13 +30,8 @@ import java.util.List;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IUserService {
 
-
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
 
     /**
      * 新增用户 （这个是管理后台手动新增的 和注册一样效果）
@@ -53,7 +48,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User usernameUser = this.getOne(usernameWrapper);
         if (usernameUser != null) {
             return false;
-//            throw new RuntimeException("用户名已存在");
+            // throw new RuntimeException("用户名已存在");
         }
         // 检查邮箱是否重复
         QueryWrapper<User> emailWrapper = new QueryWrapper<>();
@@ -61,10 +56,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
         User emailUser = this.getOne(emailWrapper);
         if (emailUser != null) {
             return false;
-//            throw new RuntimeException("邮箱已存在");
+            // throw new RuntimeException("邮箱已存在");
         }
         // 将加密后的密码存储到数据库
-        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        String encodedPassword = user.getPassword();
         user.setPassword(encodedPassword);
         user.setVip(1);
         user.setVersion(0);
@@ -121,15 +116,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
      * @return
      */
     @Override
-    public boolean authenticate(String username, String password) {
+    public User authenticate(String username, String password) {
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getUsername, username);
-        User user = userMapper.selectOne(queryWrapper
-        );
-        if (user != null) {
-            return passwordEncoder.matches(password, user.getPassword());
-        }
-        return false;
+        queryWrapper.eq(User::getPassword, password);
+        return userMapper.selectOne(queryWrapper);
     }
 
     /**
@@ -198,7 +189,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     public void setAvailableTimes(String userId, int i) {
         User user = this.getById(userId);
         user.setAvailableTimes(i);
-        this.updateUser(user,user.getVersion());
+        this.updateUser(user, user.getVersion());
 
     }
 
@@ -221,5 +212,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements IU
     @Scheduled(cron = "0 0 0-23 * * ?")
     public void scheduledResetUseTimes() {
         resetUseTimes();
+    }
+
+    @Override
+    public String getLoginId() {
+        return StpUtil.getLoginId().toString();
     }
 }

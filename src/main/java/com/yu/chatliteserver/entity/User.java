@@ -1,3 +1,11 @@
+/*
+ * @Description: 
+ * @Version: 1.0
+ * @Author: wudongyu
+ * @Date: 2023-04-09 15:01:51
+ * @LastEditors: wudongyu
+ * @LastEditTime: 2023-05-27 19:04:32
+ */
 package com.yu.chatliteserver.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
@@ -9,7 +17,6 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * <p>
